@@ -27,7 +27,7 @@ def filtered(items, packets_to_filter):
     """
     for path in items:
         name = os.path.basename(path)
-        if name.endswith('.deb') and not all(map(lambda f: f in name, packets_to_filter)):
+        if name.endswith('.deb') and not any(map(lambda f: f in name, packets_to_filter)):
             yield path
 
 
@@ -78,7 +78,7 @@ def main(path='.', control_file_path='debian/control', filter_packets=None):
         sys.stderr.write('Could not find `Depends` in control file\n')
         exit(1)
 
-    dependencies = map(extract_from_file_name, filtered(os.listdir(path), filter_packets))
+    dependencies = map(extract_from_file_name, filtered(os.listdir(path), filter_packets or []))
 
     packages_control_file_obj['Depends'] = ', '.join(
         [packages_control_file_obj['Depends']] +
