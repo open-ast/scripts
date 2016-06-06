@@ -4,7 +4,7 @@ This script scans some directory(with deb packets) and for every *.deb file
 extracts name and version, then this info could be added
 to 'debian/control' file.
 
-usage: depinfo <packages_path> <control_file_path> <filter_packets>
+usage: depinfo <packages_path> <control_file_path> [<filter_packets>]
 
 """
 
@@ -51,15 +51,15 @@ def extract_from_file_name(filename):
         )
 
 
-def main():
-    path = '.'
-    control_file_path = 'debian/control'
+def main(path='.', control_file_path='debian/control', filter_packets=None):
 
     if len(sys.argv) >= 3:
         path = sys.argv[1]
         control_file_path = sys.argv[2]
-        filter_packets = sys.argv[3]
-
+        try:
+            filter_packets = sys.argv[3]
+        except IndexError:
+            pass
     else:
         exit(1)
 
