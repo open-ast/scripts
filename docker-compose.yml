@@ -1,0 +1,4 @@
+u1404:
+  build: .
+  volumes:
+    - .:/code
