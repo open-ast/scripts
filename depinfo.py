@@ -18,17 +18,18 @@ except ImportError as err:
 _b = sys.version_info[0] < 3 and (lambda x: x) or (lambda x: x.encode('utf-8'))
 
 
-def filtered(items, exludes):
+def filtered(items, excludes):
     """
     :type items: list
     :type exludes: list
     :return:
     """
-    for item in items:
-        basename = os.path.basename(item)
-        if (basename.endswith('.deb') and
-                not all(map(lambda s: s in basename, exludes))):
-            yield item
+    for path in items:
+        name = os.path.basename(path)
+        if (name.endswith('.deb') and
+            not any(map(lambda s: s in name, excludes))):
+
+            yield path
 
 
 def extract_from_file_name(filename):
@@ -51,19 +52,17 @@ def extract_from_file_name(filename):
         )
 
 
-def main(path='.', control_file_path='debian/control', excludes=None):
-    if not excludes:
-        exlcudes = []
+def main(path='.', control_file_path='debian/control', excludes=''):
 
     if len(sys.argv) >= 3:
         path = sys.argv[1]
         control_file_path = sys.argv[2]
         try:
-            _exlcude = sys.argv[3]
-        except:
-            _exlcude = ''
+            excludes = sys.argv[3]
+        except IndexError:
+            pass
         finally:
-            exlcudes = _exlcude.split(',')
+            excludes = excludes.split(',')
     else:
         exit(1)
 
@@ -80,7 +79,7 @@ def main(path='.', control_file_path='debian/control', excludes=None):
         exit(1)
 
     dependencies = map(extract_from_file_name,
-                       filtered(os.listdir(path), exludes=exlcudes))
+                       filtered(os.listdir(path), excludes))
 
     packages_control_file_obj['Depends'] = ', '.join(
         [packages_control_file_obj['Depends']] +
