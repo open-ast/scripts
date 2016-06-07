@@ -13,22 +13,22 @@ import sys
 try:
     from debian import deb822
 except ImportError as err:
-    sys.stderr.write('Please install ... {}\n'.format(str(err)))
-
-    exit(1)
+    sys.stderr.write(err)
 
 _b = sys.version_info[0] < 3 and (lambda x: x) or (lambda x: x.encode('utf-8'))
 
 
-def filtered(items, packets_to_filter):
+def filtered(items, exludes):
     """
     :type items: list
-    :type packets_to_filter: list
+    :type exludes: list
+    :return:
     """
-    for path in items:
-        name = os.path.basename(path)
-        if name.endswith('.deb') and not any(map(lambda f: f in name, packets_to_filter)):
-            yield path
+    for item in items:
+        basename = os.path.basename(item)
+        if (basename.endswith('.deb') and
+                not all(map(lambda s: s in basename, exludes))):
+            yield item
 
 
 def extract_from_file_name(filename):
@@ -51,23 +51,24 @@ def extract_from_file_name(filename):
         )
 
 
-def main(path='.', control_file_path='debian/control', filter_packets=None):
+def main(path='.', control_file_path='debian/control', excludes=None):
+    if not excludes:
+        exlcudes = []
 
     if len(sys.argv) >= 3:
         path = sys.argv[1]
         control_file_path = sys.argv[2]
         try:
-            filter_packets = sys.argv[3]
-        except IndexError:
-            pass
+            _exlcude = sys.argv[3]
+        except:
+            _exlcude = ''
+        finally:
+            exlcudes = _exlcude.split(',')
     else:
         exit(1)
 
     if not os.path.isdir(path) and os.path.exists(control_file_path):
         exit(1)
-
-    if filter_packets:
-        filter_packets = filter_packets.split(',')
 
     fl = open(control_file_path, 'rb')
 
@@ -78,7 +79,8 @@ def main(path='.', control_file_path='debian/control', filter_packets=None):
         sys.stderr.write('Could not find `Depends` in control file\n')
         exit(1)
 
-    dependencies = map(extract_from_file_name, filtered(os.listdir(path), filter_packets or []))
+    dependencies = map(extract_from_file_name,
+                       filtered(os.listdir(path), exludes=exlcudes))
 
     packages_control_file_obj['Depends'] = ', '.join(
         [packages_control_file_obj['Depends']] +
