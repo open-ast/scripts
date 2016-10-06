@@ -83,7 +83,7 @@ def main(path='.', control_file_path='debian/control', excludes=''):
 
     packages_control_file_obj['Depends'] = ', '.join(
         [packages_control_file_obj['Depends']] +
-        ['{} (>={})'.format(k, v) for k, v in dependencies]
+        ['{} (={})'.format(k, v) for k, v in dependencies]
     )
     out = open(control_file_path, 'wb')
     out.write(_b(
